@@ -1,0 +1,21 @@
+#---- WRF/WRF-Chem test cases
+#
+# Louis Marelle, 2022/10/14
+
+Test cases for WRF and WRF-Chem simulations, including jobscripts and input
+namelists.
+
+These tests are based on the WRF-Chem-Polar version unless otherwise specified,
+code in https://github.com/Regional-Modeling-LATMOS-IGE/WRF-Chem-Polar
+
+The simulation jobscripts are machine-specific.
+jeanzay-cluster/ - Scripts for the jean-zay cluster at IDRIS
+spirit-cluster/ - Scripts for the spirit cluster at ESPRI/IPSL
+
+This also requires that WRF, WRF-Chem, WPS, and preprocessors are already
+compiled, see
+https://github.com/Regional-Modeling-LATMOS-IGE/WRF-compile-scripts
+
+I recommend going through the WRF online tutorial before running these tests,
+to better understand how the model works.
+https://www2.mmm.ucar.edu/wrf/OnLineTutorial/index.php

@@ -1,0 +1,125 @@
+#---- Instructions for running a WRF4 meteorological-only Arctic simulation on SPIRIT
+#
+# Louis Marelle, 2022/03/21
+#
+
+# This runs a low-resolution (100 km) quasi-hemispheric Arctic WRF simulation
+# for 2012-01-01 to 2012-01-05
+
+# WRF is the Weather Research and Forecasting model. It is a 3D, limited-area
+# (regional) model used for weather forecasts, weather hindcasts, and long-term
+# regional climate projections.
+#
+# For more info on WRF, 
+# https://www2.mmm.ucar.edu/wrf/users/
+# For an introduction to the model,
+# https://www.youtube.com/watch?v=wzSu-343b-0
+#
+# The WRF model is run in 3 steps. First, WPS (the WRF preprocessing
+# system), then real.exe (program creating the main wrf input and boundary
+# files), then wrf.exe (the WRF model). How to run these programs is explained
+# below.
+# 
+# Before running this test, the WRF model and WPS need to be compiled (see
+# instructions in ../../compilation/), or a compiled version of the model needs
+# to be copied to your own space.
+# I also recommend going through the WRF online tutorial before running this
+# test, to better understand how the model works
+# (https://www2.mmm.ucar.edu/wrf/OnLineTutorial/index.php)
+
+Create a directory for WRF output on your /data/ space
+mkdir /data/$(whoami)/WRF
+mkdir /data/$(whoami)/WRF/WRF_OUTPUT
+
+Create a directory for the WRF run on your home. Setup files, namelists
+and scripts should be kept in a new folder for each run and kept after the run,
+so that the run is reproducible later and the setup is documented. It is better
+to keep then on your home ~/ since it is backed up, /data/ is not.
+mkdir ~/WRF
+mkdir ~/WRF/runs
+mkdir ~/WRF/runs/met_only_test
+If you want to rerun the case later with a different setup, it is better to
+recreate a new case folder with a different name.
+
+Copy the setup scripts from here to the WRF run folder
+cp /home/marelle/scripts/WRF/run/wrf-met/* ~/WRF/run/met_only_test
+
+
+#--- Run WPS (WRF preprocessing system)
+# WPS is made of 3 programs, that are all launched from the script
+# jobscript_wps.sh.
+# 1- geogrid.exe, this creates the WPS grid files geo_em.d??.nc describing the
+# model grids.
+# 2- ungrib.exe, this converts global meteorological model data from the GRIB
+# format to an intermediate file format (FILE:* files) that WPS can read.
+# 3- metgrid.exe, this takes geo*nc and FILE:* files and combines them to create
+# WRF met input NetCDF files, met_em.d0*
+
+Open the WPS namelist (namelist.wps.YYYY) and the WPS jobscript
+(jobscript_wps.sh) and make sure that the options and input parameters are
+correct. jobscript_wps.sh automates a lot of the running of WPS, I recommend
+taking some time to look into the jobscript to understand what it is doing.
+
+Run WPS.
+sbatch jobscript_wps.sh
+You can check how WPS is going by opening the .log files written in the run
+(scratch) directory. During the execution of the script, geo_em*, FILE:*, then
+met_em* files should be created. 
+
+Check that the WPS output files are produced properly. The output folder in
+/data/$(whoami)/WRF/WRF_OUTPUT should contain met_em files and geo_em
+files. You can check the content of the files with the command:
+ncview met_em.d0* &
+
+
+#--- Run real.exe (WRF input and boundary preprocessor) 
+# real.exe is another preprocessor for WRF. It needs to run after WPS and
+# produces the NetCDF files wrfinput_d* (initial conditions), wrfbdy_d* (boundary
+# conditions), and the optional files wrffdda_d* (nudging fields for guiding
+# model projections) and wrflowinp_d* (lower boundary condition fields at
+# surface such as SST and sea ice cover)
+
+Open the real.exe and WRF namelist (namelist.input.YYYY) and the real.exe
+jobscript (jobscript_real.sh) and make sure that the options and input
+parameters are correct. The domain properties (resolution, size...) and the
+jobscript CASENAME should not change between WPS and real.exe
+
+Run real.exe
+sbatch jobscript_real.sh
+You can check how real is going in the rsl.error.0000 file written in
+the run (scratch) directory.
+
+Check that the files are produced properly. The output folder in
+/data/$(whoami)/WRF/WRF_OUTPUT should contain wrfinput_d* and wrfbdy_d* files
+at least. You can check the files with the command:
+ncview wrfinput_d01 &
+
+
+#---- Run wrf.exe (WRF model)
+# wrf.exe is the executable for the WRF model
+
+Open the real.exe and WRF namelist (namelist.input.YYYY) and the WRF jobscript
+(jobscript_wrf.sh) and make sure that the options and input parameters are
+correct. In almost all cases, namelist options should not change between
+real.exe and wrf.exe
+
+Run wrf.exe
+sbatch jobscript_wrf.sh
+You can check how the simulation is going in the rsl.error.0000 file written in
+the run directory, or the wrfout_d* files as they are being produced.
+
+Check that the files are produced properly. The output folder in
+/data/$(whoami)/WRF/WRF_OUTPUT should contain wrfout_d01* files
+at least. You can check the files with the command:
+ncview wrfout_d01* &
+
+Congratulations, you completed the WRF test run!
+
+You can experiment by changing the domain size, resolution, or lat/lon center
+in namelist.wps (&geogrid section) and namelist.input (&domains section).
+Careful, the parameters should be consistent between the 2 namelists.
+
+If you change the domain size or resolution, fdda parameters xwavenum and
+ywavenum need to be changed, as well as time step, and total memory in
+jobscripts.
+
