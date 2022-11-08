@@ -1,5 +1,5 @@
 #!/bin/bash
-#-------- Set up and run real for a WRF-Chem MOZART-MOSAIC run --------
+#-------- Set up and run real for a WRF-Chem MOZCART run --------
 #
 # Louis Marelle, 2022/11/08
 #
@@ -12,7 +12,7 @@
 
 
 #-------- Input --------
-CASENAME='WRF_ARCTIC_100km_MOZARTMOSAIC_TEST'
+CASENAME='WRF_ARCTIC_100km_MOZCART_TEST'
 CASENAME_COMMENT=''
 
 # Root directory with the compiled WRF executables (main/wrf.exe and main/real.exe)
@@ -166,20 +166,20 @@ echo " "
 #-- Default (recommended) setup. Use this mozbc setup to include all trace
 #   gases and aerosols in initial conditions + boundary conditions except dust.
 #   Dust is initialized to 0.0 because it is often overestimated in MOZART
-sed -i "s:WRFRUNDIR:$PWD/:g" mozbc_mozartmosaic4bin.inp
-mozbc < mozbc_mozartmosaic4bin.inp > mozbc.out
+sed -i "s:WRFRUNDIR:$PWD/:g" mozbc_mozcart.inp
+mozbc < mozbc_mozcart.inp > mozbc.out
 #-- Uncomment these lines if you want to use CAM-Chem model input for ic/bc
 #   instead of MOZART model input. Recommended setup if CAM-Chem output is
 #   available for the time period.
-#sed -i "s:WRFRUNDIR:$PWD/:g" cambc_mozartmosaic4bin.inp
-#mozbc < cambc_mozartmosaic4bin.inp > mozbc.out
+#sed -i "s:WRFRUNDIR:$PWD/:g" cambc_mozcart.inp
+#mozbc < cambc_mozcart.inp > mozbc.out
 #-- Uncomment these lines to initialize all aerosols except seasalt to 0 in ic.
 #   Recommended for long spinups. Trace gases ic/bc are still included,
 #   aerosols are included only in bc.
-#sed -i "s:WRFRUNDIR:$PWD/:g" mozbc_mozartmosaic4bin_noaer.inp
-#mozbc < mozbc_mozartmosaic4bin_noaer.inp > mozbc_ic.out
-#sed -i "s:WRFRUNDIR:$PWD/:g" mozbc_mozartmosaic4bin_aer.inp
-#mozbc < mozbc_mozartmosaic4bin_aer.inp > mozbc_bc.out
+#sed -i "s:WRFRUNDIR:$PWD/:g" mozbc_mozcart_noaer.inp
+#mozbc < mozbc_mozcart_noaer.inp > mozbc_ic.out
+#sed -i "s:WRFRUNDIR:$PWD/:g" mozbc_mozcart_aer.inp
+#mozbc < mozbc_mozcart_aer.inp > mozbc_bc.out
  
 #---- Run wes-coldens preprocessor (needed only for the MOZART gas phase mechanism, creates a
 # wrf_season* and exo_coldens* file, containing seasonal dry deposition
@@ -200,21 +200,21 @@ ncks -A -v XLONG,XLAT wrfinput_d01 exo_coldens_d01
 echo " "
 echo "-------- jobscript: run fire_emis --------"
 echo " "
-sed -i "s:WRFRUNDIR:$PWD/:g" fire_emis_mozartmosaic.inp
-sed -i "s:SYEAR:$yys:g" fire_emis_mozartmosaic.inp
-sed -i "s:SMONTH:$mms:g" fire_emis_mozartmosaic.inp
-sed -i "s:SDAY:$dds:g" fire_emis_mozartmosaic.inp
-sed -i "s:EYEAR:$yye:g" fire_emis_mozartmosaic.inp
-sed -i "s:EMONTH:$mme:g" fire_emis_mozartmosaic.inp
-sed -i "s:EDAY:$dde:g" fire_emis_mozartmosaic.inp
-fire_emis < fire_emis_mozartmosaic.inp > fire_emis.out
+sed -i "s:WRFRUNDIR:$PWD/:g" fire_emis_mozcart.inp
+sed -i "s:SYEAR:$yys:g" fire_emis_mozcart.inp
+sed -i "s:SMONTH:$mms:g" fire_emis_mozcart.inp
+sed -i "s:SDAY:$dds:g" fire_emis_mozcart.inp
+sed -i "s:EYEAR:$yye:g" fire_emis_mozcart.inp
+sed -i "s:EMONTH:$mme:g" fire_emis_mozcart.inp
+sed -i "s:EDAY:$dde:g" fire_emis_mozcart.inp
+fire_emis < fire_emis_mozcart.inp > fire_emis.out
 
 #---- Run the matlab anthro emission preprocessor (create wrfchemi* files)
 echo " "
 echo "-------- jobscript: run matlab emission script --------"
 echo " "
 module load matlab
-matlab -nodisplay -singleCompThread -nodesktop -r "prep_anthro_emissions_mozartmosaic_eclipse_rcp(datenum($yys,$mms,$dds),datenum($yye,$mme,$dde));exit" > prep_anthro_emissions.out
+matlab -nodisplay -singleCompThread -nodesktop -r "prep_anthro_emissions_mozcart_eclipse_rcp(datenum($yys,$mms,$dds),datenum($yye,$mme,$dde));exit" > prep_anthro_emissions.out
 matlab -nodisplay -singleCompThread -nodesktop -r "prep_emissions_oceanic_dms;exit" > prep_dms_emissions.out
 
 

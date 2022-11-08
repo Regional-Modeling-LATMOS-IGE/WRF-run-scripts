@@ -1,11 +1,11 @@
 #---- Instructions for running a WRFChem4 Arctic simulation on spirit with
-# MOZART-MOSAIC-AQ-4bin chemistry/aerosols
+# MOZCART chemistry/aerosols
 #
 # Louis Marelle, 2022/11/08
 #
 
 This runs a low-resolution (100 km) quasi-hemispheric Arctic WRF-Chem
-simulation for 2012-02-15 to 2012-02-16, with MOZART-MOSAIC gas-phase+aerosol
+simulation for 2012-02-15 to 2012-02-16, with MOZCART gas-phase+aerosol
 
 # WRF-Chem is the Weather Research and Forecasting model, including chemistry.
 # It is a 3D, limited-area (regional) model used for weather forecasts,
@@ -113,7 +113,7 @@ wrfbdy_d*, wrflowinp_d*, wrffdda_d*, wrfchemi_d*, wrf_season_wes_usgs_d*,
 exo_coldens_d* files. You can check the files with the command:
 ncview wrfinput_d01 &
 You can check variables MLAI (monthly leaf area index for bio emissions) and
-bc_a01 (bin 1 BC aerosol concentrations), which should display non-uniform data.
+BC1 (BC aerosol concentrations), which should display non-uniform data.
 You can also check all the .out output log files to make sure the preprocessors
 completed normally.
 
@@ -126,12 +126,12 @@ Open the WRF-Chem namelist (namelist.input.YYYY) and the WRF-Chem jobscript
 correct. In almost all cases, namelist options should not be changed between
 real.exe and wrf.exe
 
-Here we run WRF-Chem with MOZART gas-phase chemistry and MOSAIC
-aerosols (a setup called MOZART-MOSAIC). The main options for chemistry
-and emissions that need to be set for MOZART-MOSAIC are the following:
- chem_opt                            = 202, 
- emiss_opt                           = 10,
- emiss_inpt_opt                      = 102, 
+Here we run WRF-Chem with MOZART gas-phase chemistry and GOCART
+aerosols (a setup called MOZCART). The main options for chemistry
+and emissions that need to be set for MOZCART are the following:
+ chem_opt                            = 112, 
+ emiss_opt                           = 8,
+ emiss_inpt_opt                      = 111, 
  biomass_burn_opt                    = 2,
 
 Run wrf.exe
