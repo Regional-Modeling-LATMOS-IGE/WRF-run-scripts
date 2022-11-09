@@ -227,7 +227,7 @@
  diagnostic_chem                     = 0, 0, 0,
 ! n2o5_hetchem                        = 0
 ! snow_emissions_opt = .true.
- blowing_snow_opt                     = .true.
+! blowing_snow_opt                     = .true.
 ! aero_cw_diag_opt                    = 1, 1, 1,
 ! Emission options
 ! emiss_inpt_opt and emiss_opt are constrained by chem_opt
