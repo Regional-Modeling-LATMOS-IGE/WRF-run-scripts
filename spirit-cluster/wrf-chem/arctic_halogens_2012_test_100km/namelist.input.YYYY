@@ -114,13 +114,13 @@
 ! rdlai2d                             = .false.
  fractional_seaice                   = 1
 ! Should be used for polar runs
-! seaice_albedo_opt                   = 2
-! seaice_albedo_default               = 0.82
-! seaice_snowdepth_opt                = 0
-! seaice_snowdepth_max                = 1.0
-! seaice_snowdepth_min                = 0.001
-! seaice_thickness_opt                = 1
-! seaice_thickness_default            = 3.0
+ seaice_albedo_opt                   = 2
+ seaice_albedo_default               = 0.82
+ seaice_snowdepth_opt                = 0
+ seaice_snowdepth_max                = 1.0
+ seaice_snowdepth_min                = 0.001
+ seaice_thickness_opt                = 1
+ seaice_thickness_default            = 3.0
 ! Cumulus options
 ! Disable below 10km resolutions
  cu_physics                          = 1,   10,    10,

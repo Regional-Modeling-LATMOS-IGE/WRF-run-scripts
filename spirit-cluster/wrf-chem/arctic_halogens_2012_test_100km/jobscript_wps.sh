@@ -58,6 +58,7 @@ module load netcdf-c/4.7.4
 module load netcdf-fortran/4.5.3
 module load hdf5/1.10.7
 module load jasper
+module load matlab/2019b
 
 # Set run start and end date
 date_s="$yys-$mms-$dds"
@@ -244,6 +245,10 @@ done # While date < end date
 # Clean up
 rm -f avg_tsfc.exe metgrid.exe FILE* PFILE* TAVGSFC
 rm -rf metgrid
+
+
+#-------- Update sea ice parameters --------
+matlab -nodisplay -singleCompThread -nodesktop -r "update_seaice_depth_and_snow_simple;exit" > update_seaice.log
 
 
 #-------- Clean up --------

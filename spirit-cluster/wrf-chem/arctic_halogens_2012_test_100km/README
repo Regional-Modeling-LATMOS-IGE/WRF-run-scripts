@@ -85,6 +85,5 @@ files at least. You can check the files with the command:
 ncview wrfout_d01* &
 
 # Technical remarks and to-do list:
-#  - TODO Add the additional seaice preprocessor info, not used for now
 #  - TODO Re-include KFCuP, disabled for now
 
