@@ -1,7 +1,7 @@
 #!/bin/bash
-#-------- Set up and run WRF-Chem with MOZART-MOSAIC-4bin-AQ --------
+#-------- Set up and run WRF-Chem with SAPRC-MOSAIC-8bin-AQ-halogens --------
 #
-# Louis Marelle, 2022/09/20
+# Louis Marelle, 2022/12/04
 #
 
 # Resources used
@@ -12,22 +12,22 @@
 
 
 #-------- Input --------
-CASENAME='WRF_ARCTIC_100km_MOZARTMOSAIC_TEST'
+CASENAME='WRF_ARCTIC_100km_HALOGENS_TEST'
 CASENAME_COMMENT=''
 
 # Root directory with the compiled WRF executables (main/wrf.exe and main/real.exe)
 WRFDIR=~/WRF/src/WRF-Chem-Polar/WRFV4
-WRFVERSION='chem'
+WRFVERSION='chem.halogens'
 
 # Simulation start year and month
 yys=2012
-mms=02
-dds=15
+mms=03
+dds=01
 hhs=00
 # Simulation end year, month, day, hour
 yye=2012
-mme=02
-dde=16
+mme=03
+dde=02
 hhe=00
 
 NAMELIST="namelist.input.YYYY"
