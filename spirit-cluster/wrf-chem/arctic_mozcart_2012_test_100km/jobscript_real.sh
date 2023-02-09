@@ -74,10 +74,20 @@ mkdir "$REALDIR"
 WPSDIR="${OUTDIR_ROOT}/met_em_${CASENAME}_$(date -d "$date_s" "+%Y")"
 
 # Also create a temporary scratch run directory
-SCRATCH="$SCRATCH_ROOT/real_${CASENAME}_$(date -d "$date_s" "+%Y").scratch"
+SCRATCH="$SCRATCH_ROOT/real_${CASENAME}${CASENAME_COMMENT}_$(date -d "$date_s" "+%Y").${ID}.scratch"
 rm -rf "$SCRATCH"
 mkdir $SCRATCH
 cd $SCRATCH
+
+# Init spectral nudging parameters - we only nudge
+# the 1000 km = 1000000m scale
+nudging_scale=1000000
+wrf_dx=$(sed -n -e 's/^[ ]*dx[ ]*=[ ]*//p' "$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_dy=$(sed -n -e 's/^[ ]*dy[ ]*=[ ]*//p' "$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_e_we=$(sed -n -e 's/^[ ]*e_we[ ]*=[ ]*//p' "$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_e_sn=$(sed -n -e 's/^[ ]*e_sn[ ]*=[ ]*//p' "$NAMELIST" | sed -n -e 's/,.*//p')
+xwavenum=$(( (wrf_dx * wrf_e_we) / $nudging_scale))
+ywavenum=$(( (wrf_dy * wrf_e_sn) / $nudging_scale))
 
 # Write the info on input/output directories to run log file
 echo "Running real.exe from $WRFDIR"
@@ -114,6 +124,8 @@ sed -i "s/__ENDMONTH__/${mme}/g" namelist.input
 sed -i "s/__ENDDAY__/${dde}/g" namelist.input
 sed -i "s/__ENDHOUR__/${hhe}/g" namelist.input
 sed -i "s/__BIO_EMISS_OPT__/0/g" namelist.input
+sed -i "s/__XWAVENUM__/$xwavenum/g" namelist.input
+sed -i "s/__YWAVENUM__/$ywavenum/g" namelist.input
 echo " "
 echo "-------- jobscript: run real.exe without bio emissions--------"
 echo " "
@@ -133,7 +145,7 @@ if [ $mms -eq 1 ]; then
   sed -i "s:SMONTH:1:g" megan_bioemiss.inp
   sed -i "s:EMONTH:12:g" megan_bioemiss.inp
 else
-  sed -i "s:SMONTH:$(($mms - 1)):g" megan_bioemiss.inp
+  sed -i "s:SMONTH:$((10#$mms - 1)):g" megan_bioemiss.inp
   sed -i "s:EMONTH:$mme:g" megan_bioemiss.inp
 fi
 megan_bio_emiss < megan_bioemiss.inp > megan_bioemiss.out
@@ -150,6 +162,8 @@ sed -i "s/__ENDMONTH__/${mme}/g" namelist.input
 sed -i "s/__ENDDAY__/${dde}/g" namelist.input
 sed -i "s/__ENDHOUR__/${hhe}/g" namelist.input
 sed -i "s/__BIO_EMISS_OPT__/3/g" namelist.input
+sed -i "s/__XWAVENUM__/$xwavenum/g" namelist.input
+sed -i "s/__YWAVENUM__/$ywavenum/g" namelist.input
 echo " "
 echo "-------- jobscript: run real.exe with bio emissions --------"
 echo " "

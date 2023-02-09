@@ -1,0 +1,19 @@
+&control
+domains           = 1,
+fire_directory    = '/data/marelle/WRF/wrfchem-input-data/fire_emissions/',
+fire_filename(1)  = 'GLOBALv15_2008_SAPRC99_07142014.txt',
+wrf_directory     = 'WRFRUNDIR',
+start_date        = 'SYEAR-SMONTH-SDAY',
+end_date          = 'EYEAR-EMONTH-EDAY',
+Model             = 'WRF',
+defaultUnits      = 'molecules/cm^2/s',
+FinnVers          = '1.5',
+
+wrf2fire_map = 'co -> CO', 'no -> NO', 'no2 -> NO2', 'so2 -> SO2', 'nh3 -> NH3','acet ->ACET',
+            'c2h6 -> ALK1', 'c3h8 -> ALK2', 'alk3 -> ALK3', 'alk4 -> ALK4', 'alk5 -> ALK5', 'aro1 -> ARO1',
+            'aro2 -> ARO2', 'bald -> BALD', 'ccho -> CCHO', 'cco_oh -> CCO_OH', 'ethene -> ETHENE', 'hcho -> HCHO',
+            'hcooh -> HCOOH', 'hono -> HONO', 'isoprene -> ISOPRENE', 'mek -> MEK', 'meoh -> MEOH',
+            'methacro -> METHACRO', 'mgly -> MGLY', 'mvk -> MVK', 'ole1 -> OLE1', 'ole2 -> OLE2', 'phen -> PHEN',
+            'prod2 -> PROD2', 'rcho -> RCHO', 'rno3 -> RNO3', 'terp -> TRP1',
+            'oc -> 1.57*OC;aerosol', 'bc -> BC;aerosol', 'sulf -> -0.01*PM25 + 0.02*PM10;aerosol'
+/

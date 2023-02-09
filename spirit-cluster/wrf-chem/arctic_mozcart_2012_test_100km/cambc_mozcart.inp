@@ -4,8 +4,8 @@ do_bc     = .true.
 do_ic     = .true.
 domain    = 1
 dir_wrf   = 'WRFRUNDIR'
-dir_moz = '/data/marelle/WRFChem/wrf_utils/MOZART/'
-fn_moz  = 'camchem-201201.nc'
+dir_moz = '/data/marelle/WRF/wrfchem-input-data/initial_boundary_conditions/mozbc/camchem/'
+fn_moz  = 'camchem-nh-20111231-20120106.nc'
 moz_var_suffix = ''
 
 spc_map = 'o3 -> O3', 'n2o -> N2O', 'no -> NO',

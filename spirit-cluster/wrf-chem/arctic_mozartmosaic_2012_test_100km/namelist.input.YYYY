@@ -70,7 +70,7 @@
  target_hcfl                         = 0.8,1.0,1.0,
  max_step_increase_pct               = 5,51,51,
 ! starting time step (s) needs to be = 4x the resolution (km)
- starting_time_step                  = 100,60,12,
+ starting_time_step                  = 180,60,12,
 ! max time step (s) needs to be = 6-8x the resolution (km)
  max_time_step                       = 500,90,18,
 ! min time step (s) needs to be = the resolution (km)
@@ -197,8 +197,8 @@
  dtramp_min                          = 60.0
  !WARNING this should be changed if the driving model (FNL, ERA5) is changed,
  ! or if the domain size is changed (e_sn, e_we, dx, or dy).
- xwavenum                            = 26, 
- ywavenum                            = 19,
+ xwavenum                            = __XWAVENUM__,
+ ywavenum                            = __YWAVENUM__,
  /
 
  &grib2

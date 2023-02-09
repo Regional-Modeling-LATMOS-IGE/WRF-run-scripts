@@ -1,7 +1,7 @@
 #!/bin/bash
 #-------- Set up and run WRF-Chem with MOZART-MOSAIC-4bin-AQ --------
 #
-# Louis Marelle, 2022/09/20
+# Louis Marelle, 2023/01/13
 #
 
 # Resources used
@@ -13,11 +13,13 @@
 
 #-------- Input --------
 CASENAME='WRF_ARCTIC_100km_MOZARTMOSAIC_TEST'
+
 CASENAME_COMMENT=''
+NAMELIST="namelist.input.YYYY"
+WRFVERSION='chem'
 
 # Root directory with the compiled WRF executables (main/wrf.exe and main/real.exe)
 WRFDIR=~/WRF/src/WRF-Chem-Polar/WRFV4
-WRFVERSION='chem'
 
 # Simulation start year and month
 yys=2012
@@ -29,8 +31,6 @@ yye=2012
 mme=02
 dde=16
 hhe=00
-
-NAMELIST="namelist.input.YYYY"
 
 
 #-------- Parameters --------
@@ -73,6 +73,16 @@ rm -rf "$SCRATCH"
 mkdir $SCRATCH
 cd $SCRATCH
 
+# Init spectral nudging parameters - we only nudge
+# the 1000 km = 1000000m scale
+nudging_scale=1000000
+wrf_dx=$(sed -n -e 's/^[ ]*dx[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_dy=$(sed -n -e 's/^[ ]*dy[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_e_we=$(sed -n -e 's/^[ ]*e_we[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_e_sn=$(sed -n -e 's/^[ ]*e_sn[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+xwavenum=$(( (wrf_dx * wrf_e_we) / $nudging_scale))
+ywavenum=$(( (wrf_dy * wrf_e_sn) / $nudging_scale))
+
 # Write the info on input/output directories to run log file
 echo "Running wrf.exe from $WRFDIR"
 echo "Running on scratchdir $SCRATCH"
@@ -104,6 +114,8 @@ sed -i "s/__ENDMONTH__/${mme}/g" namelist.input
 sed -i "s/__ENDDAY__/${dde}/g" namelist.input
 sed -i "s/__ENDHOUR__/${hhe}/g" namelist.input
 sed -i "s/__BIO_EMISS_OPT__/3/g" namelist.input
+sed -i "s/__XWAVENUM__/$xwavenum/g" namelist.input
+sed -i "s/__YWAVENUM__/$ywavenum/g" namelist.input
 
 # Copy the input files from real
 cp "${REALDIR}/wrfinput_d01" "$SCRATCH/"
@@ -145,7 +157,7 @@ mpirun ./wrf.exe
 # Check the end of the log file in case the code crashes
 tail -n20 rsl.error.0000
 
-#-------- Transfer data  --------
+#-------- Transfer results and clean up  --------
 # Transfer files to the output dir
 mv "wrfout_"* "$OUTDIR/"
 mv "wrfrst_"* "$OUTDIR/"

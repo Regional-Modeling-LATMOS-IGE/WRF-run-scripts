@@ -1,7 +1,7 @@
 #!/bin/bash
-#-------- Set up and run WRF-Chem with MOZCART --------
+#-------- Set up and run WRF-Chem with SAPRC-MOSAIC-8bin-AQ (simplified SOA) --------
 #
-# Louis Marelle, 2023/01/13
+# Louis Marelle, 2023/01/19
 #
 
 # Resources used
@@ -12,12 +12,12 @@
 
 
 #-------- Input --------
-CASENAME='WRF_ARCTIC_100km_MOZCART_TEST'
+CASENAME='WRF_ARCTIC_100km_SAPRCMOSAIC_TEST'
 CASENAME_COMMENT=''
 
 # Root directory with the compiled WRF executables (main/wrf.exe and main/real.exe)
 WRFDIR=~/WRF/src/WRF-Chem-Polar/WRFV4
-WRFVERSION='chem'
+WRFVERSION='chem.saprcmosaic8bin'
 
 # Simulation start year and month
 yys=2012
@@ -76,10 +76,10 @@ cd $SCRATCH
 # Init spectral nudging parameters - we only nudge
 # the 1000 km = 1000000m scale
 nudging_scale=1000000
-wrf_dx=$(sed -n -e 's/^[ ]*dx[ ]*=[ ]*//p' "$NAMELIST" | sed -n -e 's/,.*//p')
-wrf_dy=$(sed -n -e 's/^[ ]*dy[ ]*=[ ]*//p' "$NAMELIST" | sed -n -e 's/,.*//p')
-wrf_e_we=$(sed -n -e 's/^[ ]*e_we[ ]*=[ ]*//p' "$NAMELIST" | sed -n -e 's/,.*//p')
-wrf_e_sn=$(sed -n -e 's/^[ ]*e_sn[ ]*=[ ]*//p' "$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_dx=$(sed -n -e 's/^[ ]*dx[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_dy=$(sed -n -e 's/^[ ]*dy[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_e_we=$(sed -n -e 's/^[ ]*e_we[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_e_sn=$(sed -n -e 's/^[ ]*e_sn[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
 xwavenum=$(( (wrf_dx * wrf_e_we) / $nudging_scale))
 ywavenum=$(( (wrf_dy * wrf_e_sn) / $nudging_scale))
 

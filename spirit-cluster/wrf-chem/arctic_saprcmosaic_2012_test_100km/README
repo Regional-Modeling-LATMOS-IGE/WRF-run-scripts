@@ -1,0 +1,89 @@
+#---- Instructions for running a WRFChem4 Arctic simulation on spirit with
+# simplified SAPRC99-MOSAIC-AQ-8bin-VBS chemistry/aerosols
+#
+# Louis Marelle, 2023/01/18
+#
+
+This runs a low-resolution (100 km) Arctic WRF-Chem simulation for 2012-03-01
+to 2012-03-02, with SAPRC-MOSAIC gas-phase+aerosol simplified by removing
+complex SOA from S/I/VOCs. The domain used is the same as in the
+WRF-Chem-halogen publication (https://doi.org/10.1029/2020MS002391)
+
+# The WRF-Chem model is run in 4 main steps. First, WPS (the WRF preprocessing
+# system), then real.exe (program creating the main wrf input and boundary
+# files), then additional WRF-Chem preprocessors for emissions and boundary
+# conditions, then wrf.exe (the WRF-Chem model). How to run these programs is
+# explained below.
+#
+# Before running this test case, you need to compile the following programs, or a
+# compiled version of these programs need to be copied to your own space:
+# - WRF-Chem model (WRF model with simplified SAPRC99-MOSAIC-AQ-8bin-VBS enabled)
+#   - To compile with simplified SAPRC-MOSAIC, follow the compilation guide in
+#     WRF-compile-scripts and replace "git checkout develop_polar" by
+#     "git checkout dev/simplified_saprcmosaic8" before compilation
+# - WPS (WRF preprocessor) compiled for your WRF version
+# - WRF-Chem preprocessors (mozbc, wesely, exo_coldens, megan_bio_emiss, fire_emis)
+# You can find compilation instructions in WRF-compile-scripts
+
+Create a directory for storing WRF output on your /data/ space, for example
+ mkdir /data/$(whoami)/WRF
+ mkdir /data/$(whoami)/WRF/WRF_OUTPUT
+
+Also create a directory for the WRF run on your home. Setup files, namelists
+and scripts should be kept in a new folder for each run and kept after the run,
+so that the run is reproducible later and the setup is documented. On spirit,
+it is better to keep the scripts on your home ~/ since it is backed up, /data/
+is not.
+ mkdir ~/WRF
+ mkdir ~/WRF/runs
+ mkdir ~/WRF/runs/<casename>
+If you want to rerun the case later with a different setup, it is better to
+recreate a new case folder with a different name.
+
+Copy the setup scripts from here to the WRF run folder
+ cp <path_to_this_test_case>/* ~/WRF/run/<casename>/
+
+
+#--- Run WPS (WRF preprocessing system)
+Run WPS.
+ sbatch jobscript_wps.sh
+You can check how WPS is going by opening the .log files written in the run
+(scratch) directory. During the execution of the script, geo_em*, FILE:*, then
+met_em* files should be created.
+
+Check that the WPS output files are produced properly. The output folder in
+/data/$(whoami)/WRF/WRF_OUTPUT should contain met_em files and geo_em
+files. You can check the content of the files with the command:
+ncview met_em.d0* &
+
+#--- Run real.exe (WRF input and boundary preprocessor) + additional WRF-Chem preprocessors
+Run real.exe
+ sbatch jobscript_real.sh
+You can check how real.exe is doing in the rsl.error.0000 file written in the
+run (scratch) directory.
+
+Check that the files are produced properly. The output folder in
+/data/$(whoami)/WRF/WRF_OUTPUT/real_<casename> should contain wrfinput_d*,
+wrfbdy_d*, wrflowinp_d*, wrffdda_d*, wrfchemi_d*, wrf_season_wes_usgs_d*,
+exo_coldens_d* files. You can check the files with the command:
+ncview wrfinput_d01 &
+You can check variables MLAI (monthly leaf area index for bio emissions) and
+bc_a01 (bin 1 BC aerosol concentrations), which should display non-uniform data.
+You can also check all the .out output log files to make sure the preprocessors
+completed normally.
+
+#---- Run wrf.exe (WRF-Chem model)
+Run wrf.exe
+ sbatch jobscript_wrfchem.sh
+You can check how the simulation is going in the rsl.error.0000 file written in
+the run (scratch) directory, or in the wrfout_d* files as they are being
+produced.
+
+At the end of the run, check that the output files are produced properly. The
+output folder in /data/$(whoami)/WRF/WRF_OUTPUT should contain wrfout_d01*
+files at least. You can check the files with the command:
+ncview wrfout_d01* &
+
+# Technical remarks and to-do list:
+#  - TODO Re-include KFCuP, disabled for now
+

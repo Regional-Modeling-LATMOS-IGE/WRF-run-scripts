@@ -13,7 +13,7 @@
  end_second                          = 00,   00,   00,
  interval_seconds                    = 21600
  input_from_file                     = .true.,.true.,.true.,
- history_interval_m                  = 180,  60,   60,
+ history_interval_m                  = 60,  60,   60,
  frames_per_outfile                  = 1,  1,   1,
  restart                             = .false.,
  restart_interval_h                  = 24,
@@ -69,9 +69,9 @@
  target_cfl                          = 0.8,1.0,1.0,
  target_hcfl                         = 0.8,1.0,1.0,
  max_step_increase_pct               = 5,51,51,
-! starting time step (s) needs to be = 4x the resolution (km)
- starting_time_step                  = 100,60,12,
-! max time step (s) needs to be = 6-8x the resolution (km)
+! starting time step (s) needs to be max = 4x the resolution (km)
+ starting_time_step                  = 180,60,12,
+! max time step (s) needs to be max = 6-8x the resolution (km)
  max_time_step                       = 500,90,18,
 ! min time step (s) needs to be = the resolution (km)
  min_time_step                       = 100,15,3,
@@ -114,23 +114,30 @@
 ! rdlai2d                             = .false.
  fractional_seaice                   = 1
 ! Should be used for polar runs
-! seaice_albedo_opt                   = 2
-! seaice_albedo_default               = 0.82
-! seaice_snowdepth_opt                = 0
-! seaice_snowdepth_max                = 1.0
-! seaice_snowdepth_min                = 0.001
-! seaice_thickness_opt                = 1
-! seaice_thickness_default            = 3.0
+ seaice_albedo_opt                   = 2
+ seaice_albedo_default               = 0.82
+ seaice_snowdepth_opt                = 0
+ seaice_snowdepth_max                = 1.0
+ seaice_snowdepth_min                = 0.001
+ seaice_thickness_opt                = 1
+ seaice_thickness_default            = 3.0
 ! Cumulus options
 ! Disable below 10km resolutions
- cu_physics                          = 5,     5,     5,
+ cu_physics                          = 10,   10,    10,
  cudt                                = 0,     0,     0,
  cu_rad_feedback                     = .true., .true., .true.,
  cu_diag                             = 1,
 ! shallowcu_forced_ra                 = .true., .true., .true.,
+! numBins                             = 21,
+! thBinSize                           = 0.1,
+! rBinSize                            = 1.0e-4,
+! minDeepFreq                         = 0.333,
+! minShallowFreq                      = 1.0e-2
+! shcu_aerosols_opt                   = 2,
 ! Lightning
 ! lightning_option                    = 11,
 ! lightning_dt                        = 0.,
+! iccg_method                         = 3, 3, 3,
  /
 
  &dynamics
@@ -196,7 +203,7 @@
  dtramp_min                          = 60.0
  !WARNING this should be changed if the driving model (FNL, ERA5) is changed,
  ! or if the domain size is changed (e_sn, e_we, dx, or dy).
- xwavenum                            = __xWAVENUM__,
+ xwavenum                            = __XWAVENUM__,
  ywavenum                            = __YWAVENUM__,
  /
 
@@ -205,10 +212,9 @@
 
  &chem
 ! Chemistry options
- chem_opt                            = 112, 112, 112,
+ chem_opt                            = 203,
  chemdt                              = 0, 0, 0,
- phot_opt                            = 4, 4, 4,
- has_o3_exo_coldens                  = .true.
+ phot_opt                            = 2, 2, 2,
  photdt                              = 10, 10, 10,
  gas_drydep_opt                      = 1, 1, 1,
  aer_drydep_opt                      = 1, 1, 1,
@@ -218,6 +224,7 @@
  cldchem_onoff                       = 1, 1, 1,
  vertmix_onoff                       = 1, 1, 1,
  chem_conv_tr                        = 1, 1, 1,
+ kfcup_diag                          = 1,     1,     1,
  conv_tr_wetscav                     = 1,     1,     1,
  conv_tr_aqchem                      = 1,     1,     1,
  aer_op_opt                          = 1, 1, 1,
@@ -225,26 +232,24 @@
  aer_ra_feedback                     = 1, 1, 1,
  chemdiag                            = 0, 0, 0,
  diagnostic_chem                     = 0, 0, 0,
-! n2o5_hetchem                        = 0
-! snow_emissions_opt = .true.
-! blowing_snow_opt                     = .true.
-! aero_cw_diag_opt                    = 1, 1, 1,
+ n2o5_hetchem                        = 1
+ mosaic_aer_settling_opt             = 1, 1, 1,
+ aero_cw_diag_opt                    = 1, 1, 1,
 ! Emission options
 ! emiss_inpt_opt and emiss_opt are constrained by chem_opt
  kemit                               = 1
- emiss_opt                           = 8, 8, 8,
- emiss_inpt_opt                      = 111, 111, 111,
+ emiss_opt                           = 13, 13, 13,
+ emiss_inpt_opt                      = 101, 101, 101,
  io_style_emissions                  = 2
- biomass_burn_opt                    = 2,          2,  2,
+ biomass_burn_opt                    = 6,          6,  6,
  plumerisefire_frq                   = 30,         30,  30,
  bio_emiss_opt                       = __BIO_EMISS_OPT__, __BIO_EMISS_OPT__, __BIO_EMISS_OPT__,
  ne_area                             = 432
  bioemdt                             = 0, 0, 0,
- dust_opt                            = 1
- seas_opt                            = 1
+ dust_opt                            = 13
+ seas_opt                            = 2
  dmsemis_opt                         = 2
-! lnox_opt                            = 1, 1, 1,
-! iccg_method                         = 3, 3, 3,
+! lnox_opt                            = 0, 1, 1,
 ! N_IC                                = 250, 250, 250,
 ! N_CG                                = 250, 250, 250,
 ! aircraft_emiss_opt                    = 0, 0,
