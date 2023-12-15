@@ -21,7 +21,7 @@
 # below.
 # 
 # Before running this test, the WRF model and WPS need to be compiled (see
-# instructions in ../../compilation/), or a compiled version of the model needs
+# instructions in WRF-compile-scripts), or a compiled version of the model needs
 # to be copied to your own space.
 # I also recommend going through the WRF online tutorial before running this
 # test, to better understand how the model works
