@@ -123,7 +123,7 @@
  seaice_thickness_default            = 3.0
 ! Cumulus options
 ! Disable below 10km resolutions
- cu_physics                          = 1,   10,    10,
+ cu_physics                          = 10,   10,    10,
  cudt                                = 0,     0,     0,
  cu_rad_feedback                     = .true., .true., .true.,
  cu_diag                             = 1,
@@ -223,10 +223,10 @@
  wetscav_onoff                       = 1, 1, 1,
  cldchem_onoff                       = 1, 1, 1,
  vertmix_onoff                       = 1, 1, 1,
- chem_conv_tr                        = 0, 1, 1,
- kfcup_diag                          = 0,     1,     1,
- conv_tr_wetscav                     = 0,     1,     1,
- conv_tr_aqchem                      = 0,     1,     1,
+ chem_conv_tr                        = 1, 1, 1,
+ kfcup_diag                          = 1,     1,     1,
+ conv_tr_wetscav                     = 1,     1,     1,
+ conv_tr_aqchem                      = 1,     1,     1,
  aer_op_opt                          = 1, 1, 1,
  opt_pars_out                        = 1
  aer_ra_feedback                     = 1, 1, 1,

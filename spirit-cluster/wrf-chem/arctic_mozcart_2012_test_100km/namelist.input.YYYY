@@ -196,7 +196,7 @@
  dtramp_min                          = 60.0
  !WARNING this should be changed if the driving model (FNL, ERA5) is changed,
  ! or if the domain size is changed (e_sn, e_we, dx, or dy).
- xwavenum                            = __xWAVENUM__,
+ xwavenum                            = __XWAVENUM__,
  ywavenum                            = __YWAVENUM__,
  /
 

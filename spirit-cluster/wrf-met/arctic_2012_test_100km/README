@@ -42,7 +42,7 @@ If you want to rerun the case later with a different setup, it is better to
 recreate a new case folder with a different name.
 
 Copy the setup scripts from here to the WRF run folder
-cp /home/marelle/scripts/WRF/run/wrf-met/* ~/WRF/run/met_only_test
+cp WRF-run-scripts/spirit-cluster/wrf-met/arctic_2012_test_100km ~/WRF/run/met_only_test
 
 
 #--- Run WPS (WRF preprocessing system)
@@ -119,7 +119,6 @@ You can experiment by changing the domain size, resolution, or lat/lon center
 in namelist.wps (&geogrid section) and namelist.input (&domains section).
 Careful, the parameters should be consistent between the 2 namelists.
 
-If you change the domain size or resolution, fdda parameters xwavenum and
-ywavenum need to be changed, as well as time step, and total memory in
-jobscripts.
+If you change the domain size or resolution, you might also need to change the
+time step and total memory in jobscripts.
 

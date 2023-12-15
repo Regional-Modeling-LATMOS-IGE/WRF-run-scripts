@@ -13,13 +13,11 @@
 
 #-------- Input --------
 CASENAME='WRF_ARCTIC_100km_MOZARTMOSAIC_TEST'
-
 CASENAME_COMMENT=''
-NAMELIST="namelist.input.YYYY"
-WRFVERSION='chem'
 
 # Root directory with the compiled WRF executables (main/wrf.exe and main/real.exe)
 WRFDIR=~/WRF/src/WRF-Chem-Polar/WRFV4
+WRFVERSION='chem'
 
 # Simulation start year and month
 yys=2012
@@ -31,6 +29,8 @@ yye=2012
 mme=02
 dde=16
 hhe=00
+
+NAMELIST="namelist.input.YYYY"
 
 
 #-------- Parameters --------

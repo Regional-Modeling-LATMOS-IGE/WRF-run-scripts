@@ -1,14 +1,24 @@
 #---- Instructions for running a WRFChem4 Arctic simulation on spirit with
 # SAPRC99-MOSAIC-AQ-8bin-VBS-HALOGENS chemistry/aerosols
 #
-# Louis Marelle, 2022/12/05
+# Louis Marelle, 2023/12/15
 #
 
-This runs a low-resolution (100 km) Arctic WRF-Chem simulation for 2012-03-01
-to 2012-03-02, with SAPRC-MOSAIC gas-phase+aerosol including halogens. The
-domain used is the same as in the original WRF-Chem-halogen publication
+This runs a low-resolution (100 km) quasi-hemispheric Arctic WRF-Chem
+simulation for 2012-03-01 to 2012-03-02, with SAPRC-MOSAIC gas-phase+aerosol,
+including halogens. The domain used is the same as in the original WRF-Chem-halogen publication
 (https://doi.org/10.1029/2020MS002391)
 
+# WRF-Chem is the Weather Research and Forecasting model, including chemistry.
+# It is a 3D, limited-area (regional) model used for weather forecasts,
+# long-term regional climate projections, air-quality forecasts and
+# atmospheric process studies.
+#
+# For more info on WRF and WRF-Chem
+# https://www2.mmm.ucar.edu/wrf/users/
+# For an introduction to the model,
+# https://www.youtube.com/watch?v=wzSu-343b-0
+#
 # The WRF-Chem model is run in 4 main steps. First, WPS (the WRF preprocessing
 # system), then real.exe (program creating the main wrf input and boundary
 # files), then additional WRF-Chem preprocessors for emissions and boundary
@@ -24,6 +34,10 @@ domain used is the same as in the original WRF-Chem-halogen publication
 # - WPS (WRF preprocessor) compiled for your WRF version
 # - WRF-Chem preprocessors (mozbc, wesely, exo_coldens, megan_bio_emiss, fire_emis)
 # You can find compilation instructions in WRF-compile-scripts
+#
+# I also recommend going through the WRF online tutorial before running this
+# test, to better understand how the model works. I also recommend running the
+# WRF met-only test in wrf-met/ first (WRF without the chemistry)
 
 Create a directory for storing WRF output on your /data/ space, for example
  mkdir /data/$(whoami)/WRF
@@ -45,6 +59,20 @@ Copy the setup scripts from here to the WRF run folder
 
 
 #--- Run WPS (WRF preprocessing system)
+# WPS is made of 3 programs, that are all launched from the script
+# jobscript_wps.sh.
+# 1- geogrid.exe, this creates the WPS grid files geo_em.d??.nc describing the
+# model grids.
+# 2- ungrib.exe, this converts global meteorological model data from the GRIB
+# format to an intermediate file format (FILE:* files) that WPS can read.
+# 3- metgrid.exe, this takes geo*nc and FILE:* files and combines them to create
+# WRF met input NetCDF files, met_em.d0*
+
+Open the WPS namelist (namelist.wps.YYYY) and the WPS jobscript
+(jobscript_wps.sh) and make sure that the options and input parameters are
+correct. jobscript_wps.sh automates a lot of the running of WPS, I recommend
+taking some time to look into the jobscript to understand what it is doing.
+
 Run WPS.
  sbatch jobscript_wps.sh
 You can check how WPS is going by opening the .log files written in the run
@@ -56,12 +84,34 @@ Check that the WPS output files are produced properly. The output folder in
 files. You can check the content of the files with the command:
 ncview met_em.d0* &
 
+
 #--- Run real.exe (WRF input and boundary preprocessor) + additional WRF-Chem preprocessors
+# real.exe is another preprocessor for WRF. It needs to run after WPS and
+# produces the NetCDF files wrfinput_d* (initial conditions), wrfbdy_d* (boundary
+# conditions), and the optional files wrffdda_d* (nudging fields for guiding
+# model projections) and wrflowinp_d* (lower boundary condition fields at
+# surface such as SST and sea ice cover)
+
+Open the real.exe and WRF namelist (namelist.input.YYYY) and the real.exe +
+preprocessor jobscript (jobscript_real.sh) and make sure that the options and
+input parameters are correct. The domain properties (resolution, size...) and
+the jobscript CASENAME should not change between WPS and real.exe
+
+You can also check all the .inp files for the input setup of each preprocessor.
+The fire emission preprocessor (fire_emis) and the CAM-Chem boundary conditions
+(mozbc) rely on external data. In order to change the dates of this simulation
+or to run in the Southern Hemisphere you need to redownload the data for your
+case from:
+https://www.acom.ucar.edu/cam-chem/cam-chem.shtml
+and
+https://www.acom.ucar.edu/Data/fire/
+
 Run real.exe
  sbatch jobscript_real.sh
 You can check how real.exe is doing in the rsl.error.0000 file written in the
 run (scratch) directory.
 
+#TODO complete the list and explain what the preprocessors are for:
 Check that the files are produced properly. The output folder in
 /data/$(whoami)/WRF/WRF_OUTPUT/real_<casename> should contain wrfinput_d*,
 wrfbdy_d*, wrflowinp_d*, wrffdda_d*, wrfchemi_d*, wrf_season_wes_usgs_d*,
@@ -72,7 +122,23 @@ bc_a01 (bin 1 BC aerosol concentrations), which should display non-uniform data.
 You can also check all the .out output log files to make sure the preprocessors
 completed normally.
 
+
 #---- Run wrf.exe (WRF-Chem model)
+# wrf.exe is the executable for the WRF/WRF-Chem model
+
+Open the WRF-Chem namelist (namelist.input.YYYY) and the WRF-Chem jobscript
+(jobscript_wrfchem.sh) and make sure that the options and input parameters are
+correct. In almost all cases, namelist options should not be changed between
+real.exe and wrf.exe
+
+Here we run WRF-Chem with SAPRC-99 gas-phase chemistry and MOSAIC-8bin
+aerosols, + halogens (a setup called SAPRC99-MOSAIC-8bin-HALOGENS). The main options for chemistry
+and emissions that need to be set for SAPRC99-MOSAIC-8bin-HALOGENS are the following:
+ chem_opt                            = 205, 
+ emiss_opt                           = 13,
+ emiss_inpt_opt                      = 101, 
+ biomass_burn_opt                    = 6,
+
 Run wrf.exe
  sbatch jobscript_wrfchem.sh
 You can check how the simulation is going in the rsl.error.0000 file written in

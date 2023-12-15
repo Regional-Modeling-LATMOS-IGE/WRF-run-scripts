@@ -1,7 +1,7 @@
 #---- Instructions for running a WRFChem4 Arctic simulation on spirit with
 # MOZCART chemistry/aerosols
 #
-# Louis Marelle, 2022/11/08
+# Louis Marelle, 2023/12/15
 #
 
 This runs a low-resolution (100 km) quasi-hemispheric Arctic WRF-Chem
@@ -106,7 +106,7 @@ Run real.exe
 You can check how real.exe is doing in the rsl.error.0000 file written in the
 run (scratch) directory.
 
-#TODO complete the list and explain what they are for:
+#TODO complete the list and explain what the preprocessors are for:
 Check that the files are produced properly. The output folder in
 /data/$(whoami)/WRF/WRF_OUTPUT/real_<casename> should contain wrfinput_d*,
 wrfbdy_d*, wrflowinp_d*, wrffdda_d*, wrfchemi_d*, wrf_season_wes_usgs_d*,

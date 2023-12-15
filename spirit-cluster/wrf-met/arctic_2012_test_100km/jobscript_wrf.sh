@@ -1,7 +1,7 @@
 #!/bin/bash
 #-------- Set up and run a WRF met-only run --------
 #
-# Louis Marelle, 2022/10/04
+# Louis Marelle, 2023/12/15
 #
 
 # Resources used
@@ -13,9 +13,11 @@
 
 #-------- Input --------
 CASENAME='WRF_MET_SIMPLE'
+CASENAME_COMMENT=''
 
 # Root directory with the compiled WRF executables (main/wrf.exe and main/real.exe)
 WRFDIR=~/WRF/src/WRF-Chem-Polar/WRFV4
+WRFVERSION='met'
 
 # Simulation start year and month
 yys=2012
@@ -42,7 +44,7 @@ INDIR_ROOT="$OUTDIR_ROOT"
 # Load modules used for WRF compilation
 module purge
 module load gcc/11.2.0
-module load openmpi/4.0.7 
+module load openmpi
 module load netcdf-c/4.7.4
 module load netcdf-fortran/4.5.3
 module load hdf5/1.10.7
@@ -53,30 +55,6 @@ date_s="$yys-$mms-$dds"
 date_e="$yye-$mme-$dde"
 
 
-# -------- Sanity checks on inputs --------
-echo ""
-# All of these inputs should be integers
-if ! [ "$yys" -eq "$yys" ] || ! [ "$mms" -eq "$mms" ] ||  ! [ "$dds" -eq "$dds" ] \
-|| ! [ "$yye" -eq "$yye" ] || ! [ "$mme" -eq "$mme" ] ||  ! [ "$dde" -eq "$dde" ]; then
-  echo "Error, inputs to this script should be integers" >&2
-  exit 1
-fi
-# Dates should be in the YYYY-MM-DD format
-if (( ${#yys} !=4 | ${#mms} !=2 | ${#dds} !=2  )); then
-  echo "Error, start year, month, date format must be YYYY, MM, DD; now $yys, $mms, $dds" >&2
-  exit 1
-fi
-if (( ${#yye} !=4 | ${#mme} !=2 | ${#dde} !=2  )); then
-  echo "Error, end year, month, date format must be YYYY, MM, DD; now $yye, $mme, $dde" >&2
-  exit 1
-fi
-# Start date should be before end date
-if  (( $(date -d "$date_s" "+%s") >= $(date -d "$date_e" "+%s") )); then
-  echo "Error: start date $date_s >= end date $date_e" >&2
-  exit 1
-fi
-
-
 #-------- Set up WRF input and output directories & files  --------
 # Run id
 ID="$(date +"%Y%m%d").$SLURM_JOBID"
@@ -84,14 +62,24 @@ ID="$(date +"%Y%m%d").$SLURM_JOBID"
 # Directory containing real output (e.g. wrfinput_d01, wrfbdy_d01 files)
 REALDIR="${INDIR_ROOT}/real_${CASENAME}_$(date -d "$date_s" "+%Y")"
 # Directory containing WRF-Chem output
-OUTDIR="${OUTDIR_ROOT}/DONE.${CASENAME}.$ID"
+OUTDIR="${OUTDIR_ROOT}/DONE.${CASENAME}${CASENAME_COMMENT}.$ID"
 mkdir "$OUTDIR"
 
 # Also create a temporary run directory
-SCRATCH="$SCRATCH_ROOT/DONE.${CASENAME}.$ID.scratch"
+SCRATCH="$SCRATCH_ROOT/DONE.${CASENAME}${CASENAME_COMMENT}.$ID.scratch"
 rm -rf "$SCRATCH"
 mkdir $SCRATCH
 cd $SCRATCH
+
+# Init spectral nudging parameters - we only nudge
+# the 1000 km = 1000000m scale
+nudging_scale=1000000
+wrf_dx=$(sed -n -e 's/^[ ]*dx[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_dy=$(sed -n -e 's/^[ ]*dy[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_e_we=$(sed -n -e 's/^[ ]*e_we[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+wrf_e_sn=$(sed -n -e 's/^[ ]*e_sn[ ]*=[ ]*//p' "${SLURM_SUBMIT_DIR}/$NAMELIST" | sed -n -e 's/,.*//p')
+xwavenum=$(( (wrf_dx * wrf_e_we) / $nudging_scale))
+ywavenum=$(( (wrf_dy * wrf_e_sn) / $nudging_scale))
 
 # Write the info on input/output directories to run log file
 echo "Running wrf.exe from $WRFDIR"
@@ -110,10 +98,8 @@ cp $0 "$OUTDIR/jobscript_wrf.sh"
 cp "$SLURM_SUBMIT_DIR/"* "$SCRATCH/"
 # Executables and WRF aux files from WRFDIR
 cp "$WRFDIR/run/"* "$SCRATCH/"
-cp "$WRFDIR/main/wrf.exe" "$SCRATCH/"
 # We run the version wrf.exe.$WRFVERSION in $WRFDIR/../executables
-# WRFVERSION='met'
-# cp "$WRFDIR/../executables/wrf.exe.$WRFVERSION" "$SCRATCH/wrf.exe"
+cp "$WRFDIR/../executables/wrf.exe.$WRFVERSION" "$SCRATCH/wrf.exe"
 
 #  Copy and prepare the WRF namelist, set up run start and end dates
 cp "$SLURM_SUBMIT_DIR/${NAMELIST}" namelist.input
@@ -125,6 +111,8 @@ sed -i "s/__ENDYEAR__/${yye}/g" namelist.input
 sed -i "s/__ENDMONTH__/${mme}/g" namelist.input
 sed -i "s/__ENDDAY__/${dde}/g" namelist.input
 sed -i "s/__ENDHOUR__/${hhe}/g" namelist.input
+sed -i "s/__XWAVENUM__/$xwavenum/g" namelist.input
+sed -i "s/__YWAVENUM__/$ywavenum/g" namelist.input
 
 # Copy the input files from real
 cp "${REALDIR}/wrfinput_d01" "$SCRATCH/"
@@ -144,11 +132,12 @@ mpirun ./wrf.exe
 # Check the end of the log file in case the code crashes
 tail -n20 rsl.error.0000
 
+#-------- Transfer results and clean up  --------
 # Transfer files to the output dir
 mv "wrfout_"* "$OUTDIR/"
 mv "wrfrst_"* "$OUTDIR/"
-cp namelist.input "$OUTDIR/namelist.input.wrf"
-cp rsl.* namelist.output namelist.input "$OUTDIR/"
+cp rsl.* namelist.* "$OUTDIR/"
 
-# Clean up
-# rm -rf "$SCRATCH"
+# Remove scratch dir
+rm -rf "$SCRATCH"
+
